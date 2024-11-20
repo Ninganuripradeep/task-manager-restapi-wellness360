@@ -254,7 +254,7 @@ This repository is a Task Management API that supports user registration, login,
 - **Running the Tests**:
     To run the tests, use the following command:
     ```bash
-    npm test
+    npx jest
     ```
 
     Jest will execute the test cases and provide feedback on the results.
