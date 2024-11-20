@@ -1,10 +1,7 @@
 const Task = require('../Models/Task');
-
-
 const { AppError } = require('../utils/AppError');
 
-
-// getting all tasks
+// Getting all tasks
 exports.getTasks = async (req, res, next) => {
     try {
         const { due_date, status, sort } = req.query;
@@ -54,8 +51,7 @@ exports.getTasks = async (req, res, next) => {
     }
 };
 
-
-// getting a specific task
+// Getting a specific task
 exports.getTaskById = async (req, res, next) => {
     try {
         const task = await Task.findById(req.params.id);
@@ -72,16 +68,18 @@ exports.getTaskById = async (req, res, next) => {
     }
 };
 
-//  creating a new task
+// Creating a new task
 exports.createTask = async (req, res, next) => {
     try {
         const { title, description, due_date } = req.body;
-        
-        const existingTask=await Task.findOne({title});
-        if(existingTask){
-            return next(new AppError('A task with the title already exists',400));
+
+        // Check if a task with the same title already exists
+        const existingTask = await Task.findOne({ title });
+        if (existingTask) {
+            return next(new AppError('A task with the title already exists', 400));
         }
 
+        // Create a new task
         const newTask = new Task({
             title,
             description,
@@ -98,11 +96,12 @@ exports.createTask = async (req, res, next) => {
     }
 };
 
-//  updating a task
+// Updating a task
 exports.updateTask = async (req, res, next) => {
     try {
-        const { title,due_date } = req.body;
+        const { title, due_date } = req.body;
         if (title) {
+            // Check if a task with the same title exists
             const existingTask = await Task.findOne({ title, _id: { $ne: req.params.id } });
             if (existingTask) {
                 return next(new AppError('A task with this title already exists', 400));
@@ -110,6 +109,7 @@ exports.updateTask = async (req, res, next) => {
         }
 
         if (due_date) {
+            // Validate due date
             const task = await Task.findById(req.params.id);
             if (!task) {
                 return next(new AppError('Task not found', 404));
@@ -121,7 +121,7 @@ exports.updateTask = async (req, res, next) => {
             }
         }
 
-
+        // Update the task
         const taskUpdate = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!taskUpdate) {
             throw new AppError('Task not found', 404);
@@ -129,14 +129,14 @@ exports.updateTask = async (req, res, next) => {
         res.status(200).json({
             status: 'success',
             message: 'Task updated successfully!',
-            data: updatedTask
+            data: taskUpdate
         });
     } catch (err) {
         next(err);
     }
 };
 
-//  deleting a task
+// Deleting a task
 exports.deleteTask = async (req, res, next) => {
     try {
         const task = await Task.findByIdAndDelete(req.params.id);
@@ -146,24 +146,23 @@ exports.deleteTask = async (req, res, next) => {
         res.status(200).json({
             status: 'success',
             message: 'Task deleted successfully!',
-            data: null  
+            data: null
         });
     } catch (err) {
         next(err);
     }
 };
 
-
-
-
-//updating a task status
+// Updating a task status
 exports.updateTaskStatus = async (req, res, next) => {
     const { status } = req.body;
 
-  
+    // Validate status
     if (!['pending', 'in_progress', 'completed'].includes(status)) {
         return next(new AppError('Invalid status value. Status must be one of: pending, in_progress, completed.', 400));
     }
+
+    // Validate allowed fields
     const allowedFields = ['status'];
     const providedFields = Object.keys(req.body);
     const invalidFields = providedFields.filter(field => !allowedFields.includes(field));
@@ -173,20 +172,19 @@ exports.updateTaskStatus = async (req, res, next) => {
 
     try {
         const task = await Task.findByIdAndUpdate(
-            req.params.id, 
-            { status }, 
+            req.params.id,
+            { status },
             { new: true }
         );
         if (!task) {
-            throw new AppError('Task not found', 404, 'NotFoundError');
+            throw new AppError('Task not found', 404);
         }
         res.status(200).json({
             status: 'success',
             message: `Task status updated to ${status}`,
             data: task
         });
-    } catch (err){
+    } catch (err) {
         next(err);
     }
 };
-

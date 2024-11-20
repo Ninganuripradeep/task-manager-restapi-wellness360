@@ -16,7 +16,7 @@ const taskSchema=new mongoose.Schema({
             validator:function(value){
                 return value > this.created_at;
             },
-            message:'Due date must be after the creation of date'
+            message:'Due date must be after the creation date'
         }
     },
     status:{
@@ -32,26 +32,24 @@ const taskSchema=new mongoose.Schema({
         type:Date,
         default:Date.now,
     }
-    
 });
 
-//pre hook to upade upadate_at before updating document
+// Pre hook to update updated_at before saving document
 taskSchema.pre('save',function(next){
     this.updated_at=Date.now();
     next();
-
 })
 
-//pre hook to update update_at before findOneAndUpdate
-taskSchema.pre('findOneAndUpdate',
-    function(next){
-        this.set({updated_at:Date.now()})
-        next();
-    })
+// Pre hook to update updated_at before findOneAndUpdate
+taskSchema.pre('findOneAndUpdate',function(next){
+    this.set({updated_at:Date.now()})
+    next();
+})
 
-taskSchema.index({ title: 1 });
-taskSchema.index({ status: 1 });
-taskSchema.index({ due_date: 1 });
+// Indexing fields for faster queries
+taskSchema.index({title:1});
+taskSchema.index({status:1});
+taskSchema.index({due_date:1});
 
 const Task=mongoose.model('Task',taskSchema);
 module.exports=Task;
