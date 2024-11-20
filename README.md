@@ -62,7 +62,7 @@ This repository is a Task Management API that supports user registration, login,
 
 1. **Start the server:**
     ```bash
-    npm start
+    node server.js
     ```
 
     By default, the application will run on `http://localhost:5000`.
